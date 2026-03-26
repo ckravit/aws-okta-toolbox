@@ -41,6 +41,7 @@ cd aws-okta-toolbox
 ---
 
 ### 2) Build the container
+> **Note:** Make sure Docker/Colima is running before building.
 
 ```bash
 docker build -t aws-okta-toolbox .
@@ -161,6 +162,7 @@ Clone the repository or unzip the provided archive into a folder of your
 choice. All steps below assume you are inside that folder.
 
 ### 2. Build the Docker image
+> **Note:** Make sure Docker/Colima is running before building.
 
 ```bash
 docker build -t aws-okta-toolbox .
@@ -229,11 +231,11 @@ Create it from the example:
 cp config/aws-okta-toolbox.env.example config/aws-okta-toolbox.env
 ```
 
-Edit the file - At minimum, set these (using values provided by your Okta/AWS admin):
+Edit the file - At minimum, set these (lines 10 & 11) using values provided by your Okta/AWS admin:
 
 ```bash
-export OKTA_ORG_DOMAIN="mycompany.okta.com"
-export OKTA_OIDC_CLIENT_ID="0oa1b2c3d4e5f6g7h8i9"
+OKTA_ORG_DOMAIN="mycompany.okta.com"
+OKTA_OIDC_CLIENT_ID="0oa1b2c3d4e5f6g7h8i9"
 ```
 
 To load it automatically in the future, add this line to your shell profile (`~/.zshrc`, `~/.bashrc`, etc.):
