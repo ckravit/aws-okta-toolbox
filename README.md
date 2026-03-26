@@ -56,8 +56,8 @@ cp config/aws-okta-toolbox.env.example config/aws-okta-toolbox.env
 
 Edit the file and set:
 ```bash
-OKTA_ORG_DOMAIN=your-org.okta.com
-OKTA_OIDC_CLIENT_ID=your-client-id
+OKTA_ORG_DOMAIN="your-org.okta.com"
+OKTA_OIDC_CLIENT_ID="your-client-id"
 ```
 
 ---
@@ -183,15 +183,19 @@ _(Make sure you change `/path/to/` to the appropriate path on your computer)_
 
 **Mac / Linux**: add to `~/.zshrc` or `~/.bashrc`: 
 
-
 ```bash
 export PATH="$PATH:/path/to/aws-okta-toolbox"
 ```
 
-Reload your shell after editing:
+Reload your shell after editing (or open a new terminal):
 
 ```bash
 source ~/.zshrc   # or source ~/.bashrc
+```
+
+To verify it worked, check it can be found:
+```bash
+which okta-auth
 ```
 
 **Windows (PowerShell)** — add to your PowerShell profile (`notepad $PROFILE`):
@@ -238,10 +242,10 @@ To load it automatically in the future, add this line to your shell profile (`~/
 source /path/to/aws-okta-toolbox/config/aws-okta-toolbox.env
 ```
 
-Reload your shell after editing:
+Reload your shell after editing (or open a new terminal):
 
 ```bash
-source ~/.zshrc   # or ~/.bashrc
+source ~/.zshrc   # or source ~/.bashrc
 ```
 
 If you update the env file later, reload it or open a new terminal for changes to take effect.
@@ -312,8 +316,8 @@ okta-auth.ps1
 ### What happens
 
 1. A URL and one-time code are shown in the terminal  
-2. Open the URL in your browser and authenticate  
-3. Select your AWS account and role in the terminal
+2. Paste the one-time code into the browser when prompted and authenticate
+3. In the terminal, select your AWS account and role
 4. Temporary credentials are written to `~/.aws/credentials`
 
 ### When to run it
@@ -524,6 +528,7 @@ awsdo aws s3 ls s3://my-bucket/
 
 #### Directories / Mount Paths
 Your _current directory_ is mounted as `/work` inside the toolkit container by default.  In the below `/work/file.csv` is actually using the toolkit container's mounted path `/work`  to reference the local `file.csv`
+> Local files must be referenced as `/work/<filename>` inside the container.
 
 ```bash
 # Use current directory (default)
