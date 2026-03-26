@@ -58,8 +58,8 @@ colima start
 See [Platform Notes](#platform-notes) for Colima configuration details.
 
 ### Okta credentials
-
-You will need two values from your Okta/AWS admin before you can authenticate:
+> [!IMPORTANT]  
+> You will need two values from your Okta/AWS admin before you can authenticate:
 
 - `OKTA_ORG_DOMAIN` — e.g. `mycompany.okta.com`
 - `OKTA_OIDC_CLIENT_ID` — e.g. `0oa1b2c3d4e5f6g7h8i9`
@@ -116,11 +116,6 @@ _Windows note_: Use the `.ps1` versions of all scripts: `okta-auth.ps1`, `awstun
 
 
 ---
-<!--
-Source - https://stackoverflow.com/a/16426829
-Posted by uberllama, modified by community. See post 'Timeline' for change history
-Retrieved 2026-03-25, License - CC BY-SA 4.0
--->
 
 ## Configuration
 
@@ -138,7 +133,7 @@ targets.
 
 **Step 1 — Fill in your values:**
 
-Open `config/aws-okta-toolbox.env` and set at minimum these settings.  
+Open `config/aws-okta-toolbox.env` and **edit/set** (at minimum) these settings with your specific values.  
 _(Add instance IDs and connection targets as needed for your environment)_:
 
 ```bash
