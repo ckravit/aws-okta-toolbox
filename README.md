@@ -1,10 +1,10 @@
 # aws-okta-toolbox
 
 A lightweight, portable toolkit for authenticating with AWS via Okta and
-connecting to cloud resources — without requiring local admin rights beyond
-a one-time container runtime install. All AWS tooling runs inside a Docker
+connecting to cloud resources — without requiring local admin rights beyond a one-time container runtime (e.g. Docker) installation. All AWS tooling runs inside a Docker
 container, making it consistent across Mac and Windows regardless of what
 is installed locally.
+> All AWS commands run inside the toolbox container, with your local files mounted into it.
 
 ## What's included
 
@@ -16,6 +16,85 @@ is installed locally.
 | `ssh` client | Used by VSCode Remote SSH and terminal SSH via SSM |
 | `nano` | Lightweight in-container text editor |
 
+---
+
+## Quick Start
+
+Get up and running with the default setup.
+
+---
+
+> **Prerequisite:** You need a container runtime (Docker Desktop or Colima) installed before starting.
+
+### 1) Get the toolbox
+
+**Option A — Clone:**
+```bash
+git clone <repo-url>
+cd aws-okta-toolbox
+```
+
+**Option B — ZIP:**
+- Download and unzip  
+- Open a terminal inside the folder
+
+---
+
+### 2) Build the container
+
+```bash
+docker build -t aws-okta-toolbox .
+```
+
+---
+
+### 3) Configure environment variables
+
+```bash
+cp config/aws-okta-toolbox.env.example config/aws-okta-toolbox.env
+```
+
+Edit the file and set:
+```bash
+OKTA_ORG_DOMAIN=your-org.okta.com
+OKTA_OIDC_CLIENT_ID=your-client-id
+```
+
+---
+
+### 4) Enable the toolbox (persistent)
+
+Add these to your shell profile (`~/.zshrc`, `~/.bashrc`, etc):
+
+```bash
+export PATH="$PATH:/path/to/aws-okta-toolbox"
+source /path/to/aws-okta-toolbox/config/aws-okta-toolbox.env
+```
+
+Reload your shell:
+```bash
+source ~/.zshrc   # or ~/.bashrc
+```
+
+---
+
+### 5) Authenticate
+
+```bash
+okta-auth
+```
+
+---
+
+### 6) Test it
+
+```bash
+awsdo aws s3 ls
+```
+
+If this outputs a list of buckets, you're ready to go.   
+
+> For detailed setup, application configurations, troubleshooting, and platform-specific instructions, see the sections below.
 ---
 
 ## Table of Contents
@@ -31,8 +110,16 @@ is installed locally.
    - [Database on EC2](#database-on-ec2)
    - [S3 and General AWS Commands](#s3-and-general-aws-commands)
 6. [Updating Tool Versions](#updating-tool-versions)
-7. [Versioning and Releases](#versioning-and-releases)
+7. [Troubleshooting](#troubleshooting)
 8. [Platform Notes](#platform-notes)
+
+**Main Commands**
+
+| Command | Description |
+|---|---|
+| `okta-auth` | Authenticate and refresh your AWS session |
+| `awsdo` | Run AWS CLI commands through the toolbox container |
+| `awstunnel` | Start SSM tunnels (Jupyter, databases, port forwarding) |
 
 ---
 
@@ -82,7 +169,7 @@ docker build -t aws-okta-toolbox .
 This must be run from inside the toolbox folder. It only needs to be re-run
 when you update tool versions in the Dockerfile.
 
-### 3. Make scripts executable (Mac / Linux / Git Bash / WSL)
+### 3. Make scripts executable (Mac / Linux)
 
 ```bash
 chmod +x okta-auth.sh awstunnel.sh awsdo.sh
@@ -92,9 +179,10 @@ chmod +x okta-auth.sh awstunnel.sh awsdo.sh
 
 This lets you run the scripts from any directory. 
 _(Make sure you change `/path/to/` to the appropriate path on your computer)_
+> If you completed the Quick Start, your PATH may already be configured.
 
-**Mac / Linux**: add to `~/.zshrc` or `~/.bashrc`: \
-**Windows (Git Bash / WSL)**: add to `~/.bashrc`:
+**Mac / Linux**: add to `~/.zshrc` or `~/.bashrc`: 
+
 
 ```bash
 export PATH="$PATH:/path/to/aws-okta-toolbox"
@@ -119,97 +207,121 @@ _Windows note_: Use the `.ps1` versions of all scripts: `okta-auth.ps1`, `awstun
 
 ## Configuration
 
-Configurations live in two files in the `config/` folder. Copy each example
-file (or edit) and remove the `.example` extension, and fill in your values.
+Configuration lives in two files under `config/`:
 
-Config files: 
-* `config/aws-okta-toolbox.env.example` - Environment variables
-* `config/aws-okta-toolbox.conf.example` - SSH Configurations
+- `aws-okta-toolbox.env` — required; stores environment variables used by the scripts
+- `aws-okta-toolbox.conf` — optional; used for SSH host definitions
 
-### aws-okta-toolbox.env
+Copy each example file, remove the `.example` extension, then edit and fill in your values.
 
-Contains your Okta credentials, AWS region, and instance IDs / connection
-targets. 
+### Required — `aws-okta-toolbox.env`
 
-**Step 1 — Fill in your values:**
+This file stores your Okta settings, AWS region, and any instance IDs or connection targets you want to reference from the scripts.
+> If you completed the Quick Start, this may already be configured.
 
-Open `config/aws-okta-toolbox.env` and **edit/set** (at minimum) these settings with your specific values.  
-_(Add instance IDs and connection targets as needed for your environment)_:
+Create it from the example:
+
+```bash
+cp config/aws-okta-toolbox.env.example config/aws-okta-toolbox.env
+```
+
+Edit the file - At minimum, set these (using values provided by your Okta/AWS admin):
 
 ```bash
 export OKTA_ORG_DOMAIN="mycompany.okta.com"
 export OKTA_OIDC_CLIENT_ID="0oa1b2c3d4e5f6g7h8i9"
 ```
 
-**Step 2 — Add to your shell profile so it loads automatically:** _(Make sure you change `/path/to/` to the appropriate path on your computer)_  
-**Mac / Linux**: add to `~/.zshrc` or `~/.bashrc`: \
-**Windows (Git Bash / WSL)**: add to `~/.bashrc`:
+To load it automatically in the future, add this line to your shell profile (`~/.zshrc`, `~/.bashrc`, etc.):
+
 ```bash
 source /path/to/aws-okta-toolbox/config/aws-okta-toolbox.env
 ```
 
-**Step 3 - Reload your shell after editing**
+Reload your shell after editing:
+
 ```bash
-source ~/.zshrc   # or source ~/.bashrc
+source ~/.zshrc   # or ~/.bashrc
 ```
 
-**Env Updates -** If you make changes to the env file later, re-source it (Step 3) for the changes to
-take effect in your current session.
+If you update the env file later, reload it or open a new terminal for changes to take effect.
+
+### Optional — `aws-okta-toolbox.conf`
+
+> **Note:** SSH access requires a valid key pair — see the [SSH Terminal](#ssh-terminal) section below.
+
+This file is only needed for SSH-based workflows such as terminal SSH or VSCode Remote SSH.
+ 
+It contains SSH host definitions, including instance IDs, usernames, key paths, and the path to `ssm-proxy.sh`.
 
 
-### aws-okta-toolbox.conf
-Used for SSH connections only.
-Contains SSH host definitions for your remote instances. Fill in your
-instance IDs, usernames, key paths, and the full path to `ssm-proxy.sh`.  
-
-Move the filled-in file to your SSH directory:
-
+Create it from the example:
 ```bash
+cp config/aws-okta-toolbox.conf.example config/aws-okta-toolbox.conf
+```
+
+Edit the file with your settings. Example:
+```bash
+Host my-server
+    HostName i-0abc1234567890def
+    User ssm-user
+    IdentityFile ~/.ssh/my-key
+    StrictHostKeyChecking no
+    ProxyCommand /full/path/to/aws-okta-toolbox/scripts/ssm-proxy.sh %h %p
+```
+
+Move it into your SSH directory:
+```
 mv config/aws-okta-toolbox.conf ~/.ssh/aws-okta-toolbox.conf
 ```
 
-Then add one line to the **top** of your `~/.ssh/config`.  
-_On Mac/Linux:_
-```
+Then add this line to the top of your `~/.ssh/config`:
+
+_On Mac / Linux:_
+```sshconfig
 Include ~/.ssh/aws-okta-toolbox.conf
 ```
 
 _On Windows (OpenSSH):_
-
-```
+```sshconfig
 Include %USERPROFILE%\.ssh\aws-okta-toolbox.conf
 ```
-
-No reload is needed — SSH reads the file on every connection.
+No reload is needed — SSH reads the config file on each connection.
 
 ---
 
 ## Authentication
 
-**`okta-auth.sh` is the single script for all authentication**  
+**`okta-auth` is the single command for authentication**
+
 > [!IMPORTANT]  
-> **You MUST run this to first login or refresh an expired session**
+> Run this before starting work or whenever your session expires.
+
+### Run authentication
 
 ```bash
-# Mac / Linux / Git Bash
+# Mac / Linux
 okta-auth
 ```
+
 ```bash
 # Windows PowerShell
 okta-auth.ps1
 ```
 
-**What happens:**
-1. A URL and one-time code are printed in the terminal
-2. Open the URL in your browser, approve the Okta request, and login normally
-3. Return to the terminal and select your AWS account and role from the list using the keyboard to navigate.
-4. Temporary credentials are automatically written to `~/.aws/credentials` and the container exits
+### What happens
 
-**When to run it:**
-- First thing before you start working to create an authenticated session
-- Any time you see an authentication or credentials error
-  - `awstunnel` and `awsdo` will explicitly tell you when your session has
-  expired and prompt you to re-run `okta-auth`
+1. A URL and one-time code are shown in the terminal  
+2. Open the URL in your browser and authenticate  
+3. Select your AWS account and role in the terminal
+4. Temporary credentials are written to `~/.aws/credentials`
+
+### When to run it
+
+- At the start of your session  
+- Any time you see authentication or credential errors  
+
+`awsdo` and `awstunnel` will notify you if your session has expired and prompt you to re-run `okta-auth`.
 
 ---
 
@@ -376,7 +488,7 @@ directory is automatically mounted into the container so local files are
 accessible.
 
 ```bash
-# Mac / Linux / Git Bash
+# Mac / Linux 
 awsdo <aws command>
 ```
 ```bash
@@ -505,45 +617,32 @@ Release pages:
 
 ---
 
-## Versioning and Releases
+## Troubleshooting
 
-The current version is in the `VERSION` file at the root of the repo and
-matches the latest git tag.
+- **Forgot to run `okta-auth`**  
+  Most errors are due to expired or missing credentials. Re-run `okta-auth`.
 
-### Cutting a release
+- **Docker / Colima not running**  
+  The toolbox runs inside a container. If Docker isn’t running, commands will fail.
 
-After committing your changes:
+- **Scripts not found (`okta-auth`, `awsdo`, etc.)**  
+  Your PATH may not include the toolbox directory. Restart your terminal or check your shell profile.
 
-```bash
-# Update the version number
-echo "1.0.1" > VERSION
-git add VERSION
-git commit -m "Release v1.0.1"
+- **Environment variables not loaded**  
+  If `OKTA_ORG_DOMAIN` or other values are missing, ensure your env file is sourced or restart your terminal.
 
-# Tag and push
-git tag -a v1.0.1 -m "v1.0.1"
-git push origin main --tags
-```
+- **SSH not working**  
+  SSH requires:
+  - a valid key pair
+  - correct SSH config (`~/.ssh/aws-okta-toolbox.conf`)
+  - instance access configured properly  
+  See [SSH Terminal](#ssh-terminal) section for details and troubleshooting.
 
-Use semantic versioning:
-- **PATCH** (`1.0.0` → `1.0.1`) — bug fixes, tool version bumps in Dockerfile
-- **MINOR** (`1.0.0` → `1.1.0`) — new scripts or features
-- **MAJOR** (`1.0.0` → `2.0.0`) — breaking changes
+- **Permission errors (AWS access denied)**  
+  You may have selected the wrong account/role during authentication. Re-run `okta-auth` and choose the correct one.
 
-### Rolling back
-
-If something breaks after a pull:
-
-```bash
-git checkout v1.0.0
-docker build -t aws-okta-toolbox .
-```
-
-To see all available tags:
-
-```bash
-git tag
-```
+- **Files not found when using `awsdo`**  
+  The current directory is mounted into the container as `/work`. Make sure you’re referencing files using `/work/...`
 
 ---
 
