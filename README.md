@@ -35,7 +35,7 @@ cd aws-okta-toolbox
 ```
 
 **Option B — ZIP:**
-- Download and unzip  
+- [Download](https://drive.google.com/drive/folders/1eRCBqQZZgjqhQS8NwuJml9_pnPPlDeyn?usp=sharing) and unzip 
 - Open a terminal inside the folder
 
 ---
@@ -333,7 +333,37 @@ okta-auth.ps1
 
 ## Connections
 
-### SSH Terminal
+### SSM Terminal (No SSH Keys)
+
+**Use case:** Get shell access to an EC2 instance without managing SSH keys or SSH config.
+
+This uses AWS Systems Manager (SSM) to start an interactive session directly.
+
+**Prerequisites:**
+- Instance must be SSM-enabled (SSM Agent + IAM role)
+- Your IAM role must allow `ssm:StartSession`
+
+**Steps:**
+
+1. Authenticate:
+   ```bash
+   okta-auth
+2. Start a session (replace the target ID with your instance ID):
+   ```bash
+   awsdo aws ssm start-session --target "i-0abc1234567890def"
+   ``` 
+
+   #### Using environment variables (optional)
+
+   If you defined an instance variable in your env file:
+
+    ```bash
+    awsdo aws ssm start-session --target $DEV_INSTANCE
+    ```
+
+
+### SSH Terminal (With SSH Key)
+> **Note:** If you don’t need SSH keys or VSCode integration, consider using [SSM Terminal](#ssm-terminal-no-ssh-keys) for simpler access.
 
 **Prerequisites:**
 
@@ -351,6 +381,13 @@ okta-auth.ps1
    ```bash
    ssh my-server
    ``` 
+   
+#### When to use SSH Keys or the SSM Method
+| Method     | Why use                                                    |
+|------------|------------------------------------------------------------|
+| SSM Method | No SSH keys, No config needed, Quick access                |
+| SSH Keys   | Needed for VSCode Remote SSH, SCP, or custom SSH workflows |
+
 
 #### Troubleshooting SSH
 
@@ -575,7 +612,11 @@ awsdo aws s3 sync s3://my-bucket/data/ /work
 #### EC2 and SSM examples
 
 ```bash
+# Start an interactive shell session
+awsdo aws ssm start-session --target "i-0abc1234567890def"
+
 # List running instances (useful for finding instance IDs)
+# You can copy instance IDs from this output into your env file for reuse (e.g. `DEV_INSTANCE=...`).
 awsdo aws ec2 describe-instances \
   --filters "Name=instance-state-name,Values=running" \
   --query "Reservations[*].Instances[*].{ID:InstanceId,Name:Tags[?Key=='Name']|[0].Value}" \
