@@ -35,7 +35,7 @@ cd aws-okta-toolbox
 ```
 
 **Option B — ZIP:**
-- Download and unzip  
+- [Download](https://drive.google.com/drive/folders/1eRCBqQZZgjqhQS8NwuJml9_pnPPlDeyn?usp=sharing) and unzip 
 - Open a terminal inside the folder
 
 ---
