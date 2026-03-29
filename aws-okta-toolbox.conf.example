@@ -1,0 +1,38 @@
+# aws-okta-toolbox.conf
+# SSH host definitions for SSM-based connections.
+#
+# Add one line to the TOP of your ~/.ssh/config to include this file:
+#   Include ~/.ssh/aws-okta-toolbox.conf
+#
+# On Windows (OpenSSH):
+#   Include %USERPROFILE%\.ssh\aws-okta-toolbox.conf
+#
+# This keeps your main ~/.ssh/config clean — all toolbox-related hosts
+# are managed here separately.
+#  
+# Copy or move this file to ~/.ssh/ before adding the Include directive to your ~/.ssh/config file.
+#
+# ── Template ──────────────────────────────────────────────────────────────────
+# Copy and fill in one block per remote instance.
+#
+# Replace:
+#   my-server           friendly name you type with `ssh my-server`
+#   i-0abc1234567890def EC2 instance ID (not IP or DNS name)
+#   ssm-user              remote username: ubuntu, ec2-user, ssm-user, etc
+#   ~/.ssh/my-key       path to your private key
+#   /full/path/to/aws-okta-toolbox/scripts/ssm-proxy.sh  absolute path on your machine
+
+Host my-server
+    HostName i-0abc1234567890def
+    User ssm-user
+    IdentityFile ~/.ssh/my-key
+    StrictHostKeyChecking no
+    ProxyCommand /full/path/to/aws-okta-toolbox/scripts/ssm-proxy.sh %h %p
+
+# ── Additional hosts ──────────────────────────────────────────────────────────
+# Host another-server
+#     HostName i-0zzz9876543210fed
+#     User ssm-user
+#     IdentityFile ~/.ssh/my-key
+#     StrictHostKeyChecking no
+#     ProxyCommand /full/path/to/aws-okta-toolbox/scripts/ssm-proxy.sh %h %p
