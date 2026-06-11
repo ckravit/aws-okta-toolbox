@@ -105,7 +105,7 @@ If this outputs a list of buckets, you're ready to go.
 3. [Configuration](#configuration)
 4. [Authentication](#authentication)
 5. [Connections](#connections)
-   - [SSH Terminal](#ssh-terminal)
+   - [SSH Terminal](#ssm-terminal-no-ssh-keys)
    - [VSCode Remote SSH](#vscode-remote-ssh)
    - [Jupyter Notebook / Lab](#jupyter-notebook--lab)
    - [Database on EC2](#database-on-ec2)
