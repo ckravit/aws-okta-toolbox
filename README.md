@@ -371,7 +371,7 @@ This uses AWS Systems Manager (SSM) to start an interactive session directly.
   the remote instance/server, and your private key must be
   referenced in `IdentityFile` in `aws-okta-toolbox.conf`.  
   Check out [this doc](https://tinyurl.com/sshkeycreateguide) for info on creating an SSH Keypair
-- `aws-okta-toolbox.conf` configured and included in the `~/.ssh/config` _(see above [Configuration](#aws-okta-toolboxconf))_
+- `aws-okta-toolbox.conf` configured and included in the `~/.ssh/config` _(see above [Configuration](#configuration))_
 
 1. Authenticate:
    ```bash
@@ -402,7 +402,7 @@ instances are replaced.
 **"Permission denied (publickey)"**
 - Is your private key path correct in `IdentityFile` of `~/.ssh/aws-okta-toolbox.conf`?
 - Has your public key been added to `~/.ssh/authorized_keys` on the instance?
-- Did you follow the [Configuration](#aws-okta-toolboxconf) above?  
+- Did you follow the [Configuration](#configuration) above?  
 
 **Connection hangs after Okta URL**
 Your SSM session token expired mid-connect. Re-run `okta-auth` and try again.
