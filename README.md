@@ -40,7 +40,16 @@ cd aws-okta-toolbox
 
 ---
 
-### 2) Build the container
+### 2) Make scripts executable
+
+
+```bash
+chmod +x okta-auth.sh awstunnel.sh awsdo.sh scripts/ssm-proxy.sh
+```
+
+---
+
+### 3) Build the container
 > **Note:** Make sure Docker/Colima is running before building.
 
 ```bash
@@ -49,7 +58,7 @@ docker build -t aws-okta-toolbox .
 
 ---
 
-### 3) Configure environment variables
+### 4) Configure environment variables
 
 ```bash
 cp config/aws-okta-toolbox.env.example config/aws-okta-toolbox.env
@@ -63,7 +72,7 @@ OKTA_OIDC_CLIENT_ID="your-client-id"
 
 ---
 
-### 4) Enable the toolbox (persistent)
+### 5) Enable the toolbox (persistent)
 
 Add these to your shell profile (`~/.zshrc`, `~/.bashrc`, etc):
 
@@ -79,7 +88,7 @@ source ~/.zshrc   # or ~/.bashrc
 
 ---
 
-### 5) Authenticate
+### 6) Authenticate
 
 ```bash
 okta-auth
@@ -87,7 +96,7 @@ okta-auth
 
 ---
 
-### 6) Test it
+### 7) Test it
 
 ```bash
 awsdo aws s3 ls
@@ -174,7 +183,7 @@ when you update tool versions in the Dockerfile.
 ### 3. Make scripts executable (Mac / Linux)
 
 ```bash
-chmod +x okta-auth.sh awstunnel.sh awsdo.sh
+chmod +x okta-auth.sh awstunnel.sh awsdo.sh scripts/ssm-proxy.sh
 ```
 
 ### 4. Add scripts to your PATH
@@ -744,7 +753,7 @@ Include %USERPROFILE%\.ssh\aws-okta-toolbox.conf
 Use the `.sh` scripts. Make them executable after unzipping:
 
 ```bash
-chmod +x okta-auth.sh awstunnel.sh awsdo.sh
+chmod +x okta-auth.sh awstunnel.sh awsdo.sh scripts/ssm-proxy.sh
 ```
 
 ---
