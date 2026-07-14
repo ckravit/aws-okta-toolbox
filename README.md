@@ -357,6 +357,7 @@ This uses AWS Systems Manager (SSM) to start an interactive session directly.
 1. Authenticate:
    ```bash
    okta-auth
+   ```
 2. Start a session (replace the target ID with your instance ID):
    ```bash
    awsdo aws ssm start-session --target "i-0abc1234567890def"
@@ -399,24 +400,7 @@ This uses AWS Systems Manager (SSM) to start an interactive session directly.
 
 
 #### Troubleshooting SSH
-
-**"percent_expand: failed" or "unknown key %d"**
-You have an old inline `docker run` ProxyCommand using `%d` in your
-`~/.ssh/aws-okta-toolbox.conf`. Replace it with the script-based ProxyCommand as shown in the example file.
-
-**"Host key verification failed"**
-Add `StrictHostKeyChecking no` to the host block — instance IDs change when
-instances are replaced.
-
-**"Permission denied (publickey)"**
-- Is your private key path correct in `IdentityFile` of `~/.ssh/aws-okta-toolbox.conf`?
-- Has your public key been added to `~/.ssh/authorized_keys` on the instance?
-- Did you follow the [Configuration](#configuration) above?  
-
-**Connection hangs after Okta URL**
-Your SSM session token expired mid-connect. Re-run `okta-auth` and try again.
-
-If still having trouble, contact your admin.
+See the [Troubleshooting SSH](#troubleshooting-ssh) section below
 
 ---
 
@@ -688,6 +672,17 @@ Release pages:
 - **Environment variables not loaded**  
   If `OKTA_ORG_DOMAIN` or other values are missing, ensure your env file is sourced or restart your terminal.
 
+- **Permission errors (AWS access denied)**  
+  You may have selected the wrong account/role during authentication. Re-run `okta-auth` and choose the correct one.
+
+- **Files not found when using `awsdo`**  
+  The current directory is mounted into the container as `/work`. Make sure you’re referencing files using `/work/...`
+
+- **Connection hangs after Okta URL**
+   - Your SSM session token expired mid-connect. Re-run `okta-auth` and try again.
+
+### Troubleshooting SSH
+
 - **SSH not working**  
   SSH requires:
   - a valid key pair
@@ -695,11 +690,98 @@ Release pages:
   - instance access configured properly  
   See [SSH Terminal](#ssh-terminal) section for details and troubleshooting.
 
-- **Permission errors (AWS access denied)**  
-  You may have selected the wrong account/role during authentication. Re-run `okta-auth` and choose the correct one.
+- **"percent_expand: failed" or "unknown key %d"**  
+  You have an old inline `docker run` ProxyCommand using `%d` in your
+`~/.ssh/aws-okta-toolbox.conf`. Replace it with the script-based ProxyCommand as shown in the example file.
 
-- **Files not found when using `awsdo`**  
-  The current directory is mounted into the container as `/work`. Make sure you’re referencing files using `/work/...`
+- **"Host key verification failed"**  
+  Add `StrictHostKeyChecking no` to the host block — instance IDs change when
+instances are replaced.
+
+- **"Permission denied (publickey)"**
+  - Is your private key path correct in `IdentityFile` of `~/.ssh/aws-okta-toolbox.conf`?
+  - Has your public key been added to `~/.ssh/authorized_keys` on the instance?
+  - Is the `User` value correct for the remote account in your SSH config file?
+  - If multiple local keys exist, add `IdentitiesOnly yes` to the host block in your SSH config file.
+  - Did you follow the [Configuration](#configuration) above?  
+
+- **"Connection closed by UNKNOWN port 65535", "document process failed unexpectedly", or "ipc messaging received timeout signal"**  
+  Follow the [Debugging SSH](#debugging-ssh) section below.
+
+### Debugging SSH
+
+Start by confirming that direct SSM access works:
+
+```bash
+awsdo aws ssm start-session --target i-0abc1234567890def
+```
+- If this fails, troubleshoot AWS credentials or instance connectivity first.
+- If this works but `ssh my-server` fails, verify SSH is running on the server (see next section)
+
+#### Check SSH on the instance
+
+From a working direct SSM session, run:
+
+```bash
+sudo systemctl is-active ssh
+sudo systemctl is-enabled ssh
+sudo ss -lntp | grep ':22'
+```
+
+A healthy result should show:
+
+```text
+active
+enabled
+LISTEN ... :22 ... sshd
+```
+
+The EC2 security group does **not** need inbound port 22 open. However, `sshd`
+must still be running locally on the instance so the SSM proxy can forward the
+SSH connection to it.
+
+If SSH is inactive or not enabled:
+
+```bash
+sudo systemctl start ssh
+sudo systemctl enable ssh
+sudo ss -lntp | grep ':22'
+```
+
+If SSH does not start:
+
+```bash
+sudo sshd -t
+sudo journalctl -u ssh --since "10 minutes ago" --no-pager -l
+```
+
+`sshd -t` returns no output when the SSH configuration is valid.
+
+#### Check the effective SSH configuration
+
+Run this on your local computer:
+
+```bash
+ssh -G my-server | grep -Ei '^(hostname|user|port|identityfile|proxycommand|proxyjump|identitiesonly) '
+```
+
+Confirm that:
+
+- `hostname` is the correct EC2 instance ID
+- `user` is the intended remote SSH account
+- `identityfile` points to the correct private key
+- `proxycommand` points to the current `ssm-proxy.sh` location
+
+Use full paths for files referenced by `IdentityFile` or `ProxyCommand`, especially if the toolbox folder has been moved.
+
+For detailed connection output:
+
+```bash
+ssh -vvv my-server
+```
+
+If still having trouble, contact your admin.
+
 
 ---
 
