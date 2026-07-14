@@ -398,9 +398,8 @@ This uses AWS Systems Manager (SSM) to start an interactive session directly.
 | SSM Method | No SSH keys, No config needed, Quick access                |
 | SSH Keys   | Needed for VSCode Remote SSH, SCP, or custom SSH workflows |
 
-
-#### Troubleshooting SSH
-See the [Troubleshooting SSH](#troubleshooting-ssh) section below
+#### Need help connecting?
+For connection problems, see [Troubleshooting SSH](#troubleshooting-ssh)
 
 ---
 
